@@ -5,6 +5,8 @@ Code for using multiple distance sensors to track an object and have a servo mot
 
 For this project I used 2 Maxbotix Ultrasonic Rangefinder (HRLV-EZ0) sensors as they had the widest field of view, while also being highly accurate and appropriate for detecting people.
 
+To use, all you need to do is put in the correct distance between the two sensors and the X and Y distance the servo is from the left sensor. After that, it just uses some basic trigonometry to figure out where the object is.
+
 **ToDo:**
  - Smooth out servo movement
  - Enable the control of multiple servos at once
