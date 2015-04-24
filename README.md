@@ -1,4 +1,4 @@
-# AnimatronicArduino
+# Animatronic Arduino
 Code for using multiple distance sensors to track an object and have a servo motor follow its location in 2D space. Eventually this will be used to control statues, and include audio dialog.
 
 ![](http://i.imgur.com/R5bjzA3.jpg?1)
