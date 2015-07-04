@@ -1,0 +1,9 @@
+/AccelTest
+/Audio
+/Scripts
+/TangentTests
+/StepperTests
+/RangeTests
+._*
+*.ipynb
+*.pdf
