@@ -46,6 +46,7 @@ int readingIndex = 0; // Index of current reading
 float readings[numReadings]; // Array for holding readings
 float readingsTotal = 0.0; // Running total
 float smoothedAngle = 0.0;
+int motorA2CurrSteps = 0;
 
 
 void setup() {
@@ -151,8 +152,12 @@ void loop() {
     
     motorA2Steps = motorPosition(xCoord, yCoord);
 
-    motorA2acc.moveTo(motorA2Steps);
-    cycleCount = 0;
+    if (abs(motorA2CurrSteps - motorA2Steps) > 3) {
+      motorA2acc.moveTo(motorA2Steps);
+      motorA2CurrSteps = motorA2Steps;
+      cycleCount = 0;
+    }
+
   } else {
     cycleCount = cycleCount + 1;
     motorA2acc.run();
