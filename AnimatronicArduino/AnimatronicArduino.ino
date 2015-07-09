@@ -11,7 +11,7 @@ int sensorLevel = 0;
 Adafruit_MotorShield motorShieldA(0x60);
 
 // Position of Motor A relative to Sensor A in centimetres
-#define motorA2x 30
+#define motorA2x 32
 #define motorA2y 0
 
 Adafruit_StepperMotor *motorA2 = motorShieldA.getStepper(200, 2);
@@ -30,7 +30,7 @@ AccelStepper motorA2acc(forwardstep2, backwardstep2);
 // Set up the range finders
 #define pwPinA 7 // RF A
 #define pwPinB 8 // RF B
-// Distance between range finders
+// Distance between range finders. Used for triangulation of the person.
 #define distRF 71.0
 long pulseA, pulseB;
 
@@ -91,7 +91,7 @@ float angleCalc(float distA, float distB) {
   }
 }
 
-// Calculates where to position the motor to point at the object.
+// Calculates where to position the motor to point at the object detected.
 int motorPosition(float xCoord, float yCoord) {
   float rad, deg;
   int steps;
@@ -100,18 +100,22 @@ int motorPosition(float xCoord, float yCoord) {
   rad = atan2((yCoord - -1*motorA2y), (xCoord - motorA2x));
   // Return angle in degrees
   deg = rad * 180 / M_PI;
-  // Have to multiply by -1 since positive angles are clockwise for the stepper library, while they are normally negative in trig.
+  // Have to multiply by -1 since positive angles are clockwise for the stepper library, 
+  // while they are normally negative in trig.
   steps = -1 * deg / 1.8;
   return steps;
 }
 
-int cycleCount = 8000;
+int cycleCount = 16000;
 
 void loop() {  
   // Serial.print(", Motor A Steps: ");
   // Serial.println(motorA2Steps);
-  if (cycleCount == 8000){
-    // Get the distance from sensor A
+  
+  // Sends out a pulse to find the position of the person every 16000 cycles
+  // to prevent blocking.
+  if (cycleCount == 16000){
+    // Get the distance from sensor A and B
     pulseA = pulseIn(pwPinA, HIGH);
     pulseA = pulseA / 10.0; // 10 uS per cm
     pulseB = pulseIn(pwPinB, HIGH);
@@ -122,6 +126,7 @@ void loop() {
     // Serial.print(", B: ");
     // Serial.print(pulseB);
     
+    // Get the angle relative to the first sensor
     angle = angleCalc(pulseA, pulseB);
     // Serial.print(", Angle: ");
     //  Serial.print(angle);
@@ -138,8 +143,10 @@ void loop() {
 
     smoothedAngle = readingsTotal / (float)numReadings;
     
+    // Find the x-coordinate and y-coordinate of the person
     xCoord = pulseA*cos(smoothedAngle);
-    // All y values are negative because of the coordinate system used relative to the position of the sensors.
+    // All y values are negative because of the coordinate system used
+    // relative to the position of the sensors.
     yCoord = -1*pulseA*sin(smoothedAngle);
     // Serial.print("X: ");
     // Serial.print(xCoord); 
@@ -150,15 +157,28 @@ void loop() {
     // Serial.print(", Smoothed: ");
     // Serial.println(smoothedAngle);
     
+    // This part makes the motors lock on the person, and not jitter around unless
+    // the person moves again.
+    
+    // Fetch how the motor should position itself 
     motorA2Steps = motorPosition(xCoord, yCoord);
-
+    
+    // If the position of the person has moved such that the motor should move more
+    // than 3 steps (roughly 5 degrees), move the motor.
     if (abs(motorA2CurrSteps - motorA2Steps) > 3) {
       motorA2acc.moveTo(motorA2Steps);
       motorA2CurrSteps = motorA2Steps;
       cycleCount = 0;
+    } else {
+      // Stops current flowing through the motor to prevent overheating
+      // and keep it fixed on the person. If not enabled, a NEMA-17 motor
+      // can reach over 100 degrees celcius. 
+      motorA2->release();
+      // Serial.println("Output disabled.");
     }
 
   } else {
+    // Loop and increment the motor position
     cycleCount = cycleCount + 1;
     motorA2acc.run();
   }
