@@ -11,8 +11,8 @@ int sensorLevel = 0;
 Adafruit_MotorShield motorShieldA(0x60);
 
 // Position of Motor A relative to Sensor A in centimetres
-#define motorA2x 32
-#define motorA2y 0
+#define motorA2x -15
+#define motorA2y -5
 
 Adafruit_StepperMotor *motorA2 = motorShieldA.getStepper(200, 2);
 int motorA2Steps; // Used to control position of motor
