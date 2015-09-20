@@ -1,14 +1,18 @@
 // Serial port setup
 
-#include <SoftwareSerial.h> 
+#include <SoftwareSerial.h>
 SoftwareSerial XBee =  SoftwareSerial(2, 3);
 
 // Servo Setup
+// The shield uses pins 9 and 10, exposing their PWM capabilities
+int potPin = 0;
+int potVal;
 
 // constants won't change. They're used here to
 // set pin numbers:
 const int buttonPin = 7;     // the number of the pushbutton pin
 const int ledPin =  13;      // the number of the LED pin
+int angle;
 
 // variables will change:
 int buttonState = 0;         // variable for reading the pushbutton status
@@ -26,21 +30,13 @@ void setup() {
 }
 
 void loop() {
-  // read the state of the pushbutton value:
-  buttonState = digitalRead(buttonPin);
+
+  potVal = analogRead(potPin);
+  angle = map(potVal, 0, 1024, 0, 180);
 
   // check if the pushbutton is pressed.
   // if it is, the buttonState is HIGH:
-  if (buttonState == HIGH) {
-    // turn LED on:
-    digitalWrite(ledPin, HIGH);
-    XBee.write((byte)0x01);
-    Serial.println(buttonState);
-  } else {
-    // turn LED off:
-    digitalWrite(ledPin, LOW);
-    XBee.write((byte)0x00 );
-    Serial.println(buttonState);
-  }
-  delay(10);
+  XBee.write((int)angle);
+  Serial.println(angle);
+  delay(100);
 }
