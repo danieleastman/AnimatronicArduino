@@ -32,7 +32,7 @@ void setup() {
 void loop() {
 
   potVal = analogRead(potPin);
-  angle = map(potVal, 0, 1024, 0, 180);
+  angle = constrain(map(potVal, 0, 1024, 0, 180), 5, 175);
 
   // check if the pushbutton is pressed.
   // if it is, the buttonState is HIGH:
