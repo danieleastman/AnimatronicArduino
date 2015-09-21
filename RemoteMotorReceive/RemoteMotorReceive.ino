@@ -25,7 +25,6 @@
 
 
 Servo myServo;
-SoftwareSerial XBee = SoftwareSerial(8,9);
 
 int angle;
 
@@ -57,16 +56,16 @@ void setup() {
   // initialize digital pin 13 as an output
 
   Serial.begin(9600);
-  Serial.println("Testing motors and audio begins!");
-  XBee.begin(9600);
+  // Serial.println("Testing motors and audio begins!");
+  //Serial1.begin(9600);
 
   myServo.attach(2);
 
   if (! musicPlayer.begin()) { // initialise the music player
-     Serial.println(F("Couldn't find VS1053, do you have the right pins defined?"));
+     // Serial.println(F("Couldn't find VS1053, do you have the right pins defined?"));
      while (1);
   }
-  Serial.println(F("VS1053 found"));
+  // Serial.println(F("VS1053 found"));
   
   SD.begin(CARDCS);    // initialise the SD card
   
@@ -88,19 +87,20 @@ void padding( int number, byte width ) {
   int currentMax = 10;
   for (byte i=1; i<width; i++){
     if (number < currentMax) {
-      Serial.print("0");
+      //Serial.print("0");
     }
     currentMax *= 10;
   }
-  Serial.print(number);
+  //Serial.print(number);
 } 
 
 // the loop function runs over and over again forever
 void loop() {
-  if (XBee.available()) {
-    angle = (int)XBee.read();
-    Serial.print("Received: ");
-    Serial.println(angle);
+  if (Serial.available()) {
+    //Serial.println("XBee Available");
+    angle = (int)Serial.read();
+    //Serial.print("Received: ");
+    //Serial.println(angle);
     myServo.write(angle);
     file_number = constrain(map(angle, 0, 180, 1, 12), 1, 11);
     
@@ -124,13 +124,13 @@ void loop() {
     }
 
     if (changed == true) {
-      Serial.println("SHIT CHANGED, YO!");
+      //Serial.println("SHIT CHANGED, YO!");
       //if (musicPlayer.playingMusic == true) {
         musicPlayer.stopPlaying();
       //}
-      Serial.println("Donkey!");
+      //Serial.println("Donkey!");
       filename.toCharArray(filename_char, 10);
-      Serial.println(filename_char);
+      //Serial.println(filename_char);
       musicPlayer.startPlayingFile(filename_char);
     }
   }
