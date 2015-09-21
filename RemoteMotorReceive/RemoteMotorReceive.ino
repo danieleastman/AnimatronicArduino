@@ -49,7 +49,7 @@ Adafruit_VS1053_FilePlayer musicPlayer =
 int current_file_number = 99;
 int file_number = 0;
 String filename;
-char* filename_char;
+char filename_char[10];
 bool changed = true;
 
 // the setup function runs once when you press reset or power the board
@@ -124,8 +124,13 @@ void loop() {
     }
 
     if (changed == true) {
-      musicPlayer.stopPlaying();
+      Serial.println("SHIT CHANGED, YO!");
+      //if (musicPlayer.playingMusic == true) {
+        musicPlayer.stopPlaying();
+      //}
+      Serial.println("Donkey!");
       filename.toCharArray(filename_char, 10);
+      Serial.println(filename_char);
       musicPlayer.startPlayingFile(filename_char);
     }
   }
