@@ -1,7 +1,9 @@
 // Serial port setup
 
+#include <SoftEasyTransfer.h>
 #include <SoftwareSerial.h>
 SoftwareSerial XBee =  SoftwareSerial(2, 3);
+SoftEasyTransfer ETin, ETout; 
 
 // Servo Setup
 // The shield uses pins 9 and 10, exposing their PWM capabilities
@@ -11,8 +13,6 @@ int potVal;
 // Set of variables for choosing which file to play
 int currentFileNumber = 99;
 int fileNumber = 0;
-String filename;
-char filename_char[10];
 bool changed = true;
 
 // constants won't change. They're used here to
@@ -21,52 +21,30 @@ const int ledPin =  13;      // the number of the LED pin
 int angle;
 int commandCount = 0;
 
-// Define the size of the buffer used to send messages
-#define MESSAGE_BUFFER_SIZE   64
+struct SEND_DATA_STRUCTURE{
+  int unitId;
+  int commandId;
+  int angle;
+  int audio;
+};
+SEND_DATA_STRUCTURE sendData;
 
-// Initialize the send and receive message buffers
-char sendMessageBuffer[MESSAGE_BUFFER_SIZE];
-char receiveMessageBuffer[MESSAGE_BUFFER_SIZE];
-
-// Define the size of the buffer for the payload
-#define PAYLOAD_BUFFER_SIZE   64
-
-// Used to store the received payload
-char receiveAudio[PAYLOAD_BUFFER_SIZE];
-// Used to store the received payload
-int receiveAngle;
-// Used to store the id of the unit a command was received from
-int receiveUnitId;
-// Used to store the id of the command acknowledgement 
-int receiveCommandId;
-
-
-void pack_message(int unitId, int commandId, int angle, char audio[], char messageBuffer[]) {
-  String message_builder = "";
-  message_builder.concat(unitId);
-  message_builder.concat(":");
-  message_builder.concat(commandId);
-  message_builder.concat(":");
-  message_builder.concat(angle);
-  message_builder.concat(":");
-  message_builder.concat(audio);
-  message_builder.concat("@");
-
-  message_builder.toCharArray(messageBuffer, MESSAGE_BUFFER_SIZE);
-}
-
-void unpack_message(char messageBuffer[], int *unitIdReceived, int *commandId, int *angle, char audio[]) {
-  sscanf(messageBuffer, "%d:%d:%d:%s", unitIdReceived, commandId, angle, audio);
-}
+struct RECEIVE_DATA_STRUCTURE{
+  int blink;
+};
+RECEIVE_DATA_STRUCTURE receiveData;
 
 void setup() {
   // initialize the LED pin as an output:
   pinMode(ledPin, OUTPUT);
-
+  
   Serial.begin(9600);
   Serial.println("Testing Up!");
   // set the data rate for the SoftwareSerial port
   XBee.begin(9600);
+
+  ETout.begin(details(sendData), &XBee);
+  ETin.begin(details(receiveData), &XBee);
 }
 
 void padding( int number, byte width ) {
@@ -95,24 +73,21 @@ void loop() {
   }
 
   if (changed == true) {
-    if (fileNumber < 10) {
-      filename = "0";
-      filename.concat(fileNumber);
-      filename.concat(".mp3");
-    } else {
-      filename = "";
-      filename.concat(fileNumber);
-      filename.concat(".mp3");
-    }
-    filename.toCharArray(filename_char, 10);
-
-    pack_message(3, commandCount, angle, filename_char, sendMessageBuffer);
-    Serial.println(sendMessageBuffer);
-    Serial.println("");
-
-    XBee.print(sendMessageBuffer);
+    sendData.unitId = 3;
+    sendData.commandId = commandCount;
+    sendData.angle = angle;
+    sendData.audio = fileNumber;
+    Serial.println(fileNumber);
+    ETout.sendData();
+    
     commandCount += 1;
   }
 
-  delay(500);
+  if (ETin.receiveData()) {
+      digitalWrite(ledPin, HIGH);
+      delay(50);
+      digitalWrite(ledPin, LOW);
+  }
+
+  delay(50);
 }
