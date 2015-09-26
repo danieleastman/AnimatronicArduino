@@ -110,7 +110,7 @@ void loop() {
     Serial.println(sendMessageBuffer);
     Serial.println("");
 
-    XBee.write(sendMessageBuffer);
+    XBee.print(sendMessageBuffer);
     commandCount += 1;
   }
 
