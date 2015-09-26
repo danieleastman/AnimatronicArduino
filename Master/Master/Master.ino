@@ -50,6 +50,7 @@ void pack_message(int unitId, int commandId, int angle, char audio[], char messa
   message_builder.concat(angle);
   message_builder.concat(":");
   message_builder.concat(audio);
+  message_builder.concat("@");
 
   message_builder.toCharArray(messageBuffer, MESSAGE_BUFFER_SIZE);
 }
@@ -81,6 +82,7 @@ void padding( int number, byte width ) {
 
 void loop() {  
   potVal = analogRead(potPin);
+  // Serial.println(potVal);
   angle = constrain(map(potVal, 0, 1024, 0, 180), 5, 175);
 
   // Generate the file number to play from the angle of the pot

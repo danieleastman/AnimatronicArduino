@@ -100,9 +100,16 @@ void setup() {
 void loop() {
   if (Serial.available()) {
 
-    receivedMessage = Serial.readString();
+    receivedMessage = Serial.readStringUntil('@');
+    Serial.println(receivedMessage);
     receivedMessage.toCharArray(receiveMessageBuffer, MESSAGE_BUFFER_SIZE);
     unpack_message(receiveMessageBuffer, &receiveUnitId, &receiveCommandId, &receiveAngle, receiveAudio);
+    
+//    Serial.println(receiveUnitId);
+//    Serial.println(receiveCommandId);
+//    Serial.println(receiveAngle);
+//    Serial.println(receiveAudio);
+//    Serial.println("");
 
     musicPlayer.stopPlaying();
     myServo.write(receiveAngle);
