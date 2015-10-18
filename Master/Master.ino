@@ -2,9 +2,16 @@
 
 #include <SoftEasyTransfer.h>
 #include <SoftwareSerial.h>
+#include <Metro.h>
 SoftwareSerial XBee =  SoftwareSerial(2, 3);
+
 // SoftEasyTransfer ETin, ETout; 
-SoftEasyTransfer ETout; 
+SoftEasyTransfer ETout;
+
+// Used for scheduling distance readings and communications
+Metro getDistance = Metro(100); // Take a reading every 100ms
+Metro sendCoords = Metro(250);  // Send the result every 250ms
+
 
 // Set of variables for choosing which file to play
 //int currentFileNumber = 99;
@@ -81,10 +88,10 @@ float angleCalc(float distA, float distB) {
   }
 }
 
-int cycleCount = 16000;
-
 void loop() {
-  if (cycleCount == 16000) {
+  // Calculate the distance reading at the interval specified above
+  if (getDistance.check() == 1) {
+
     // Get the distance from sensor A and B
     pulseA = pulseIn(rangeA, HIGH);
     pulseA = pulseA / 10.0; // 10 uS per cm
@@ -110,7 +117,10 @@ void loop() {
     // of the sensors.
     xCoord = pulseA * cos(smoothedAngle);
     yCoord = -1 * pulseA * sin(smoothedAngle);
+  }
 
+  // Send the smoothed distance reading at the rate specified above
+  if (sendCoords.check() == 1) {
     for(int i = 0; i < NUM_STATUE; i++) {
       sendData.unitId = statues[i];
       sendData.commandType = 1;
@@ -131,14 +141,6 @@ void loop() {
       // Serial.println(yCoord);
       // Serial.println("---------------");
     }
-//
-//    if (ETin.receiveData()) {
-//        digitalWrite(ledPin, HIGH);
-//        delay(50);
-//        digitalWrite(ledPin, LOW);
-//    }
-
-    cycleCount = 0;
   }
 
   // Generate the file number to play from the angle of the pot
@@ -149,8 +151,6 @@ void loop() {
   // } else {
   //   changed = false;
   // }
-
-  cycleCount = cycleCount + 1;
 
 }
 
