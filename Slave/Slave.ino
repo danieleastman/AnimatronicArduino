@@ -11,8 +11,11 @@ int statueId = 1;
 #define statueX 95.0
 #define statueY 10.0
 
-int statueCurrAngle = 0;
-int statueAngle = 0;
+int currentAngle = 0;
+int destinationAngle = 0;
+// Used to smooth the motion between positions. The closer to 
+// 1, the faster the motion converges to its destination.
+float smooth = 0.1;
 
 Servo statueServo;
 
@@ -90,8 +93,8 @@ float motorPositionDeg(float xCoord, float yCoord, float motorX, float motorY) {
 }
 
 
-// the loop function runs over and over again forever
 void loop() {
+  // If we receive data, do something with it.
   if (ETin.receiveData()) {
 //  Serial.println("---------------");
 //  Serial.print("Statue: ");
@@ -102,12 +105,9 @@ void loop() {
 //  Serial.print(receiveData.xPos);
 //  Serial.print(", Y: ");
 //  Serial.println(receiveData.yPos);
+
   // Convert the x,y coordinate to an angle
-  statueAngle = motorPositionDeg(receiveData.xPos, receiveData.yPos, statueX, statueY);
-  if (abs(statueCurrAngle - statueAngle) > 2) {
-      statueServo.write(statueAngle);
-      statueCurrAngle = statueAngle;
-    }
+  destinationAngle = motorPositionDeg(receiveData.xPos, receiveData.yPos, statueX, statueY);
 
   // sendData.blink = 1;
   // ETout.sendData();
@@ -129,4 +129,9 @@ void loop() {
   // // Serial.println(filename_char);
   // musicPlayer.startPlayingFile(filename_char);
   }
+
+  // Gradually move the motor to its destination
+  currentAngle = currentAngle * (1.0 - smooth) + destinationAngle * smooth;
+  statueServo.write(currentAngle);
+  delay(10);
 }

@@ -10,7 +10,7 @@ SoftEasyTransfer ETout;
 
 // Used for scheduling distance readings and communications
 Metro getDistance = Metro(100); // Take a reading every 100ms
-Metro sendCoords = Metro(250);  // Send the result every 250ms
+Metro sendCoords = Metro(150);  // Send the result every 250ms
 
 
 // Set of variables for choosing which file to play
